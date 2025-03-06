@@ -139,5 +139,3 @@ To extend the implementation to use real data instead of synthetic:
 2. Ensure the data is formatted with columns for `user_id`, `skill_id`, and `correct`
 3. Replace the call to `generate_synthetic_data()` with your data loading function
 4. Continue with the sequence creation and model training steps as in the original code
-
-This implementation provides a solid foundation for knowledge tracing that you can build upon for more advanced educational applications.
