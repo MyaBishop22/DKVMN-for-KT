@@ -72,7 +72,7 @@ The code is designed to be educational and extensible. It clearly shows how to i
 
 Before running the knowledge tracing implementation, you'll need the following installed on your system:
 
-1. **Python 3.6+**: The code is written in Python and requires at least version 3.6.
+1. **Python 3.9, 3.10, or 3.11**: For anyone running this implementation, they should use Python 3.9, 3.10, or 3.11 for the best compatibility with TensorFlow.
 
 2. **Required Libraries**:
    - TensorFlow 2.x: For building and training the neural network models
