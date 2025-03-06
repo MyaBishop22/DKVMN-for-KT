@@ -65,3 +65,79 @@ Several challenges were addressed during implementation:
 This implementation demonstrates how neural network approaches can be applied to knowledge tracing. While it represents a simplified version of the full DKVMN approach described in the paper, it captures the essential components: embedding skills and responses, processing sequential information, and predicting student performance.
 
 The code is designed to be educational and extensible. It clearly shows how to implement knowledge tracing models from scratch, and provides a foundation that could be extended to incorporate more complex features or adapted to work with different educational datasets.
+
+# Running the Knowledge Tracing Implementation
+
+## Prerequisites
+
+Before running the knowledge tracing implementation, you'll need the following installed on your system:
+
+1. **Python 3.6+**: The code is written in Python and requires at least version 3.6.
+
+2. **Required Libraries**:
+   - TensorFlow 2.x: For building and training the neural network models
+   - NumPy: For numerical operations
+   - Pandas: For data manipulation
+   - scikit-learn: For evaluation metrics and data splitting
+
+## Installation Instructions
+
+1. **Create a directory** for the project:
+   ```bash
+   mkdir DKVMN
+   cd DKVMN
+   ```
+
+2. **Install required packages** using pip:
+   ```bash
+   pip install tensorflow numpy pandas scikit-learn
+   ```
+
+3. **Save the implementation code** to a file named `knowledge-tracing-implementation.py` in your project directory.
+
+## Running the Implementation
+
+1. **Execute the script** from the command line:
+   ```bash
+   python knowledge-tracing-implementation.py
+   ```
+
+2. **What to expect during execution**:
+   - The script will first generate synthetic data with realistic learning patterns
+   - It will create sequences of skill interactions with window size 5
+   - The enhanced model will be built and trained (this may take a few minutes)
+   - The baseline model will be trained for comparison
+   - Final results will be displayed in a table format similar to Table 1 in the paper
+
+3. **Monitoring progress**:
+   - The script provides detailed progress updates during execution
+   - You'll see the validation AUC after each epoch, which indicates model performance
+   - Early stopping will automatically end training when performance stops improving
+
+## Customization Options
+
+If you want to modify the implementation for different scenarios, you can adjust these parameters in the `main()` function:
+
+- **Data size**: Change `n_users` and `n_skills` in the `generate_synthetic_data()` call
+- **Window size**: Modify the `window_size` variable (default is 5)
+- **Training epochs**: Adjust the `epochs` parameter in the `train_model()` function
+- **Model complexity**: Modify the `embedding_dim` parameter in the model building functions
+
+## Troubleshooting
+
+If you encounter any issues:
+
+1. **Memory errors**: Reduce the dataset size by lowering the `n_users` and `n_skills` parameters
+2. **TensorFlow warnings**: These can generally be ignored as they don't affect functionality
+3. **Import errors**: Ensure all required packages are installed correctly
+
+## Extending the Implementation
+
+To extend the implementation to use real data instead of synthetic:
+
+1. Create a function to load and preprocess your data
+2. Ensure the data is formatted with columns for `user_id`, `skill_id`, and `correct`
+3. Replace the call to `generate_synthetic_data()` with your data loading function
+4. Continue with the sequence creation and model training steps as in the original code
+
+This implementation provides a solid foundation for knowledge tracing that you can build upon for more advanced educational applications.
