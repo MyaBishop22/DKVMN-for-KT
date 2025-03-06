@@ -90,5 +90,3 @@ You can modify the implementation in several ways:
 - Adjust the model architecture by modifying the `build_kt_model` function
 - Change the number of training epochs for more refined results
 - Try different synthetic datasets by modifying the dataset selection logic
-
-This implementation provides a solid foundation for understanding and experimenting with knowledge tracing algorithms based on the ideas presented in the DKVMN paper.
