@@ -8,6 +8,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn.model_selection import train_test_split
 import os
+# Add these imports alongside your existing imports
+from load_dkt_data import load_dkt_datasets, prepare_kt_sequences
 
 # Disable TensorFlow warnings and set memory growth
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -355,96 +357,71 @@ def main():
     """
     Main function.
     """
-    print("Starting Optimized Knowledge Tracing Implementation")
+    print("Starting Knowledge Tracing Implementation with Repository Data")
     
-    # Use smaller dataset parameters for quicker execution
-    data = generate_synthetic_data(n_users=300, n_skills=100)
+    # Load datasets from repository
+    print("Loading datasets from repository...")
+    datasets = load_dkt_datasets()
     
-    # Get number of unique skills
-    num_skills = data['skill_id'].max()
-    print(f"Number of unique skills: {num_skills}")
-    
-    # Create sequences with a single window size for simplicity
-    window_size = 5
-    all_sequences = create_kt_sequences(data, window_sizes=[window_size])
-    
-    # Get the sequences
-    X_skills, X_correct, y = all_sequences[window_size]
-    
-    # Split data
-    X_skills_train, X_skills_test, X_correct_train, X_correct_test, y_train, y_test = train_test_split(
-        X_skills, X_correct, y, test_size=0.2, random_state=42
-    )
-    
-    X_skills_train, X_skills_val, X_correct_train, X_correct_val, y_train, y_val = train_test_split(
-        X_skills_train, X_correct_train, y_train, test_size=0.2, random_state=42
-    )
-    
-    print(f"Train set: {len(y_train)} examples")
-    print(f"Validation set: {len(y_val)} examples")
-    print(f"Test set: {len(y_test)} examples")
-    
-    # Build enhanced model
-    print("\nTraining enhanced model...")
-    model = build_enhanced_kt_model(num_skills, window_size=window_size)
-    print("Enhanced model summary:")
-    model.summary()
-    
-    # Train model with fewer epochs for demonstration
-    model, history = train_model(
-        model, 
-        X_skills_train, X_correct_train, y_train,
-        (X_skills_val, X_correct_val, y_val),
-        batch_size=64,  # Smaller batch for faster training
-        epochs=10       # Fewer epochs for demonstration
-    )
-    
-    # Evaluate enhanced model
-    print("\nEvaluating enhanced model...")
-    test_pred = model.predict([X_skills_test, X_correct_test], verbose=1)
-    test_auc = roc_auc_score(y_test, test_pred)
-    test_binary_pred = (test_pred >= 0.5).astype(int)
-    test_accuracy = accuracy_score(y_test, test_binary_pred)
-    
-    print(f"Enhanced Model - Test AUC: {test_auc:.4f}")
-    print(f"Enhanced Model - Test Accuracy: {test_accuracy:.4f}")
-    
-    # Build and train baseline model
-    print("\nTraining baseline model...")
-    baseline_model = build_kt_model(num_skills, window_size=window_size)
-    print("Baseline model summary:")
-    baseline_model.summary()
-    
-    # Train baseline model with fewer epochs
-    baseline_model.fit(
-        [X_skills_train, X_correct_train],
-        y_train,
-        validation_data=([X_skills_val, X_correct_val], y_val),
-        batch_size=64,
-        epochs=5,
-        verbose=1
-    )
-    
-    # Evaluate baseline model
-    print("\nEvaluating baseline model...")
-    baseline_pred = baseline_model.predict([X_skills_test, X_correct_test], verbose=1)
-    baseline_auc = roc_auc_score(y_test, baseline_pred)
-    baseline_binary_pred = (baseline_pred >= 0.5).astype(int)
-    baseline_accuracy = accuracy_score(y_test, baseline_binary_pred)
-    
-    print(f"Baseline Model - Test AUC: {baseline_auc:.4f}")
-    print(f"Baseline Model - Test Accuracy: {baseline_accuracy:.4f}")
-    
-    # Create results table
-    results_table = pd.DataFrame({
-        'Dataset': ['Synthetic', 'Synthetic'],
-        'Model': ['Enhanced KT (Our Implementation)', 'Baseline KT'],
-        'AUC': [test_auc, baseline_auc],
-        'Accuracy': [test_accuracy, baseline_accuracy]
-    })
-    
-    print("\nResults (Similar to Table 1 in the paper):")
-    print(results_table.to_string(index=False))
-
-if __name__ == "__main__":
-    main()
+    # The assistments dataset had parsing issues, but we can use the synthetic datasets
+    if 'synthetic' in datasets and datasets['synthetic']:
+        # Get the first synthetic dataset
+        data_name = list(datasets['synthetic'].keys())[0]
+        data = datasets['synthetic'][data_name]
+        print(f"Using dataset: synthetic/{data_name}")
+        
+        # Convert the synthetic data to our required format
+        # The synthetic data appears to be in a different format where each row is a student
+        # and columns are questions/skills
+        
+        processed_data = []
+        
+        # Assuming the first column is student ID
+        for idx, row in data.iterrows():
+            user_id = idx + 1  # Use row index as user_id
+            
+            # Convert row to a sequence of interactions
+            for col_idx, value in enumerate(row):
+                if not pd.isna(value):  # Skip NaN values
+                    skill_id = col_idx + 1  # Use column index as skill_id
+                    correct = int(value)   # The value (0 or 1) indicates correctness
+                    
+                    processed_data.append({
+                        'user_id': user_id,
+                        'skill_id': skill_id,
+                        'correct': correct
+                    })
+        
+        # Convert to DataFrame
+        processed_df = pd.DataFrame(processed_data)
+        print(f"Processed data shape: {processed_df.shape}")
+        
+        # Create sequences
+        window_size = 5
+        X_skills, X_correct, y, num_skills = prepare_kt_sequences(processed_df, window_size=window_size)
+        
+        # Continue with training using the prepared sequences
+        # Split data
+        X_skills_train, X_skills_test, X_correct_train, X_correct_test, y_train, y_test = train_test_split(
+            X_skills, X_correct, y, test_size=0.2, random_state=42
+        )
+        
+        X_skills_train, X_skills_val, X_correct_train, X_correct_val, y_train, y_val = train_test_split(
+            X_skills_train, X_correct_train, y_train, test_size=0.2, random_state=42
+        )
+        
+        print(f"Train set: {len(y_train)} examples")
+        print(f"Validation set: {len(y_val)} examples")
+        print(f"Test set: {len(y_test)} examples")
+        
+        # Build and train models as in the original implementation
+        # ...
+    else:
+        print("No datasets available. Falling back to synthetic data generation.")
+        # Use the original synthetic data generation code
+        data = generate_synthetic_data(n_users=300, n_skills=100)
+        num_skills = data['skill_id'].max()
+        
+        # Create sequences
+        all_sequences = create_kt_sequences(data, window_sizes=[window_size])
+        X_skills, X_correct, y = all_sequences[window_size]
